@@ -54,6 +54,45 @@ class GameService
 
     private function canMoveToDirection($player, $direction)
     {
+        $x = $player->getX();
+        $y = $player->getY();
+        $move_coor = $this->getMoveCoor($x, $y, $direction);
+        $map_data = $this->game_map->getMapData();
+        if (!$map_data[$move_coor[0]][$move_coor[1]]) {
+            return false;
+        }
+        return true;
+    }
 
+    private function getMoveCoor($x, $y, $direction)
+    {
+        switch ($direction) {
+            case PlayerService::UP:
+                return [--$x, $y];
+            case PlayerService::DOWN:
+                return [++$x, $y];
+            case PlayerService::LEFT:
+                return [$x, --$y];
+            case PlayerService::RIGHT:
+                return [$x, ++$y];
+        }
+        return [$x, $y];
+    }
+
+    public function isGameOver()
+    {
+        $result = false;
+        $x = -1;
+        $y = -1;
+        $players = array_values($this->players);
+        foreach ($players as $key => $player) {
+            if ($key == 0) {
+                $x = $player->getX();
+                $y = $player->getY();
+            } elseif ($x == $player->getX() && $y == $player->getY()) {
+                $result = true;
+            }
+        }
+        return $result;
     }
 }
