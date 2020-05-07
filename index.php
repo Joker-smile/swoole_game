@@ -4,6 +4,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 use App\Manager\Game;
 use App\Model\Player;
 
+new \App\Server();
+
 $game    = new Game();
 $red_id  = "red_player";
 $blue_id = "blue_player";
