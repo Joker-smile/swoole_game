@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\Manager\DataCenter;
+
 class Server
 {
     private $ws;
@@ -30,19 +32,17 @@ class Server
     {
         echo "server: onWorkStart,worker_id:{$server->worker_id}\n";
     }
-
     public function onOpen($server, $request)
     {
-
+        DataCenter::log(sprintf('client open fd：%d', $request->fd));
     }
-
-    public function onClose($server, $fd)
-    {
-
-    }
-
     public function onMessage($server, $request)
     {
-
+        DataCenter::log(sprintf('client open fd：%d，message：%s', $request->fd, $request->data));
+        $server->push($request->fd, 'server:hello client!');
+    }
+    public function onClose($server, $fd)
+    {
+        DataCenter::log(sprintf('client close fd：%d', $fd));
     }
 }
