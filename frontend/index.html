@@ -9,7 +9,11 @@
 <body>
 
 <div id="app">
-    {{ message }}
+    <label>
+        玩家ID：
+        <input type="text" :value="playerId">
+    </label>
+    <button @click="matchPlayer">匹配</button>
 </div>
 
 <script>
@@ -18,6 +22,7 @@
         data: {
             message: 'Hello Joker!',
             websock: null,
+            playerId: 'player_' + Math.round(Math.random() * 1000),
         },
         created() {
             this.initWebSocket();
@@ -26,27 +31,38 @@
             this.websock.close() //离开路由之后断开websocket连接
         },
         methods: {
+            //匹配玩家
+            matchPlayer() {
+                let actions = {"code": 600};
+                this.websocketsend(actions);
+            },
+
             initWebSocket() { //初始化websocket
-                const wsuri = "ws://0.0.0.0:5230";
+                const wsuri = "ws://0.0.0.0:5230?player_id=" + this.playerId;
                 this.websock = new WebSocket(wsuri);
                 this.websock.onmessage = this.websocketonmessage;
                 this.websock.onopen = this.websocketonopen;
                 this.websock.onerror = this.websocketonerror;
                 this.websock.onclose = this.websocketclose;
             },
+
             websocketonopen() { //连接建立之后执行send方法发送数据
                 let actions = "client:hello serve!";
                 this.websocketsend(actions);
             },
+
             websocketonerror() {//连接建立失败重连
                 this.initWebSocket();
             },
+
             websocketonmessage(e) { //数据接收
-                this.message  = e.data;
+                let message  = e.data;
             },
+
             websocketsend(Data) {//数据发送
                 this.websock.send(JSON.stringify(Data));
             },
+
             websocketclose(e) {  //关闭
                 console.log('断开连接', e);
             },

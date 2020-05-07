@@ -6,7 +6,9 @@
             "email": "zai1020733278@gmail.com"
         }
     ],
-    "require": {},
+    "require": {
+        "ext-redis": "*"
+    },
     "autoload": {
         "psr-4": {
             "App\\": "app"

@@ -8,5 +8,10 @@ return [
         'worker_num'            => 4,
         'enable_static_handler' => true,
         'document_root'         => __DIR__.'/frontend'
+    ],
+
+    'redis'=>[
+        'host'=>'127.0.0.1',
+        'port'=>'6379'
     ]
 ];
