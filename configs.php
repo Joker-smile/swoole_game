@@ -9,7 +9,9 @@ return [
         'task_worker_num' => 4,
         'dispatch_mode'   => 5,
         'enable_static_handler' => true,
-        'document_root'         => __DIR__.'/frontend'
+        'document_root'         => __DIR__.'/frontend',
+        //启动后台进程守护
+        'daemonize'=>1
     ],
 
     'redis'=>[
