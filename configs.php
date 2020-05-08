@@ -11,7 +11,7 @@ return [
         'enable_static_handler' => true,
         'document_root'         => __DIR__.'/frontend',
         //启动后台进程守护
-        'daemonize'=>1
+//        'daemonize'=>1
     ],
 
     'redis'=>[
