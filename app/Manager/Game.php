@@ -96,4 +96,14 @@ class Game
         }
         return $result;
     }
+
+    public function getPlayers()
+    {
+        return $this->players;
+    }
+
+    public function getMapData()
+    {
+        return $this->game_map->getMapData();
+    }
 }

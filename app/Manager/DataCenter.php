@@ -6,6 +6,10 @@ use App\Lib\Redis;
 
 class DataCenter
 {
+    const PREFIX_KEY = "game";
+    public static $server;
+    public static $global = [];
+
     public static function log($info, $context = [], $level = 'INFO')
     {
         if ($context) {
@@ -21,23 +25,89 @@ class DataCenter
         return Redis::getInstance();
     }
 
-    public function pushPlayerToWaitList(int $player_id)
+    public static function getPlayerWaitListLen()
     {
-
+        $key = self::PREFIX_KEY . ":player_wait_list";
+        return self::redis()->lLen($key);
     }
 
-    public static function getPlayerId(int $fd)
+    public static function pushPlayerToWaitList($player_id)
     {
-
+        $key = self::PREFIX_KEY . ":player_wait_list";
+        self::redis()->lPush($key, $player_id);
     }
 
-    public static function delPlayerInfo(int $fd)
+    public static function popPlayerFromWaitList()
     {
-
+        $key = self::PREFIX_KEY . ":player_wait_list";
+        return self::redis()->rPop($key);
     }
 
-    public static function setPlayerInfo(int $player_id, int $fd)
+    public static function getPlayerFd($player_id)
     {
+        $key = self::PREFIX_KEY . ":player_fd:" . $player_id;
+        return self::redis()->get($key);
+    }
 
+    public static function setPlayerFd($player_id, $player_fd)
+    {
+        $key = self::PREFIX_KEY . ":player_fd:" . $player_id;
+        self::redis()->set($key, $player_fd);
+    }
+
+    public static function delPlayerFd($player_id)
+    {
+        $key = self::PREFIX_KEY . ":player_fd:" . $player_id;
+        self::redis()->del($key);
+    }
+
+    public static function getPlayerId($player_fd)
+    {
+        $key = self::PREFIX_KEY . ":player_id:" . $player_fd;
+        return self::redis()->get($key);
+    }
+
+    public static function setPlayerId($player_fd, $player_id)
+    {
+        $key = self::PREFIX_KEY . ":player_id:" . $player_fd;
+        self::redis()->set($key, $player_id);
+    }
+
+    public static function delPlayerId($player_fd)
+    {
+        $key = self::PREFIX_KEY . ":player_id:" . $player_fd;
+        self::redis()->del($key);
+    }
+
+    public static function setPlayerInfo($player_id, $player_fd)
+    {
+        self::setPlayerId($player_fd, $player_id);
+        self::setPlayerFd($player_id, $player_fd);
+    }
+
+    public static function delPlayerInfo($player_fd)
+    {
+        $player_id = self::getPlayerId($player_fd);
+        self::delPlayerFd($player_id);
+        self::delPlayerId($player_fd);
+    }
+
+    public static function initDataCenter()
+    {
+        //清空匹配队列
+        $key = self::PREFIX_KEY . ':player_wait_list';
+        self::redis()->del($key);
+        //清空玩家ID
+        $key    = self::PREFIX_KEY . ':player_id*';
+        $values = self::redis()->keys($key);
+        foreach ($values as $value) {
+            self::redis()->del($value);
+        }
+        //清空玩家FD
+        $key    = self::PREFIX_KEY . ':player_fd*';
+        $values = self::redis()->keys($key);
+        foreach ($values as $value) {
+            self::redis()->del($value);
+        }
     }
 }

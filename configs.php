@@ -5,7 +5,9 @@ return [
     'server_port'   => '5230',
     'front_port'    => '5231',
     'swoole_config' => [
-        'worker_num'            => 4,
+        'worker_num'      => 4,
+        'task_worker_num' => 4,
+        'dispatch_mode'   => 5,
         'enable_static_handler' => true,
         'document_root'         => __DIR__.'/frontend'
     ],
