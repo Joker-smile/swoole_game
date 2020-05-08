@@ -66,9 +66,12 @@ class Logic
         $game_manager = DataCenter::$global['rooms'][$room_id]['manager'];
         $players      = $game_manager->getPlayers();
         $map_data     = $game_manager->getMapData();
-        foreach ($players as $player) {
-            $map_data[$player->getX()][$player->getY()] = $player->getId();
+
+        //必须倒序输出，因为游戏设定数组第一个是寻找者，第二个是躲藏者，叠加时赢的是寻找者。
+        foreach (array_reverse($players) as $player) {
+            $mapData[$player->getX()][$player->getY()] = $player->getId();
         }
+
         foreach ($players as $player) {
             $data = [
                 'players'  => $players,
