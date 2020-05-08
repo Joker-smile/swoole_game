@@ -12,6 +12,8 @@ class Server
 
     const CLIENT_CODE_START_ROOM = 601;
 
+    const CLIENT_CODE_MOVE_PLAYER = 602;
+
     private $ws;
 
     private $logic;
@@ -66,6 +68,10 @@ class Server
 
             case self::CLIENT_CODE_START_ROOM:
                 $this->logic->startRoom($data['room_id'], $player_id);
+                break;
+
+            case self::CLIENT_CODE_MOVE_PLAYER:
+                $this->logic->movePlayer($data['direction'], $player_id);
                 break;
         }
     }

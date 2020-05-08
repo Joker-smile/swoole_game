@@ -28,6 +28,7 @@ class Logic
         $player_fd = DataCenter::getPlayerFd($player_id);
         DataCenter::$server->bind($player_fd, crc32($room_id));
         DataCenter::$server->push($player_fd, $room_id);
+        DataCenter::setPlayerRoomId($player_id, $room_id);
         Sender::sendMessage($player_id, Sender::MSG_ROOM_ID, ['room_id' => $room_id]);
     }
 
@@ -41,7 +42,7 @@ class Logic
         }
 
         /**
-         * @var Game $gameManager
+         * @var Game $game_manager
          */
         $game_manager = DataCenter::$global['rooms'][$room_id]['manager'];
         if (empty(count($game_manager->getPlayers()))) {
@@ -88,5 +89,42 @@ class Logic
             $result[] = $tmp;
         }
         return $result;
+    }
+
+    public function movePlayer($direction, $player_id)
+    {
+        if (!in_array($direction, Player::DIRECTION)) {
+            echo $direction;
+            return;
+        }
+        $room_id = DataCenter::getPlayerRoomId($player_id);
+        if (isset(DataCenter::$global['rooms'][$room_id])) {
+
+            $this->checkGameOver($room_id);
+            /**
+             * @var Game $game_manager
+             */
+            $game_manager = DataCenter::$global['rooms'][$room_id]['manager'];
+            $game_manager->playerMove($player_id, $direction);
+            $this->sendGameInfo($room_id);
+        }
+    }
+
+    private function checkGameOver($room_id)
+    {
+        /**
+         * @var Game $game_manager
+         * @var Player $player
+         */
+        $game_manager = DataCenter::$global['rooms'][$room_id]['manager'];
+        if ($game_manager->isGameOver()) {
+            $players = $game_manager->getPlayers();
+            $winner = current($players)->getId();
+            foreach ($players as $player) {
+                Sender::sendMessage($player->getId(), Sender::MSG_GAME_OVER, ['winner' => $winner]);
+                DataCenter::delPlayerRoomId($player->getId());
+            }
+            unset(DataCenter::$global['rooms'][$room_id]);
+        }
     }
 }
