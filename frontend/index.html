@@ -75,9 +75,19 @@
     <div v-if="matching" style="display: inline">
         匹配中……
     </div>
-    <br>
-    <div v-if="onlinePlayer">
-        当前在线玩家：{{onlinePlayer}}
+    <div v-else>
+        <div v-if="onlinePlayer">
+            当前在线玩家：{{onlinePlayer}}
+        </div>
+        <div v-if="playersRank">
+            <br>
+            游戏排行榜：
+            <br>
+            <template v-for="times, player in playersRank">
+                玩家：{{player}} 胜利次数：{{times}}
+                <br>
+            </template>
+        </div>
     </div>
     <br>
     <hr>
@@ -129,7 +139,8 @@
             matching: false,
             mapData: null,
             playerId: '',
-            onlinePlayer: null
+            onlinePlayer: null,
+            playersRank:null
         },
         created() {
             this.initPlayerId();
@@ -208,17 +219,34 @@
                         'type': 'get_online_player'
                     },
                     success: function (result) {
-                        // setInterval(function () {
-                        //     $.get('http://192.168.33.10:5231/?type=get_online_player', function (ret) {
-                        //         that.onlinePlayer = JSON.parse(ret).online_player
-                        //     });
-                        // }, 1500)
-                        that.onlinePlayer = result.online_player
+                        setInterval(function () {
+                            $.get('http://192.168.33.10:5231/?type=get_online_player', function (ret) {
+                                that.onlinePlayer = JSON.parse(ret).online_player
+                            });
+                        }, 1500)
+
+                        // that.onlinePlayer = result.online_player
                     },
                     error: function () {
                         that.onlinePlayer = 0;
                     },
+                });
+
+                $.ajax({
+                    url: 'http://192.168.33.10:5231',
+                    type: 'get',
+                    dataType: 'json',
+                    data: {
+                        'type': 'get_player_rank'
+                    },
+                    success: function (result) {
+                        that.playersRank = result.players_rank
+                    },
+                    error: function () {
+
+                    }
                 })
+
             },
 
             clickDirect(direction) {
