@@ -208,11 +208,12 @@
                         'type': 'get_online_player'
                     },
                     success: function (result) {
-                        setInterval(function () {
-                            $.get('http://192.168.33.10:5231/?type=get_online_player', function (ret) {
-                                that.onlinePlayer = JSON.parse(ret).online_player
-                            });
-                        }, 1500)
+                        // setInterval(function () {
+                        //     $.get('http://192.168.33.10:5231/?type=get_online_player', function (ret) {
+                        //         that.onlinePlayer = JSON.parse(ret).online_player
+                        //     });
+                        // }, 1500)
+                        that.onlinePlayer = result.online_player
                     },
                     error: function () {
                         that.onlinePlayer = 0;
