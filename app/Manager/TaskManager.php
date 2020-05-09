@@ -7,7 +7,7 @@ namespace App\Manager;
 class TaskManager
 {
     //用于发起寻找玩家task任务
-    const TASK_CODE_FIND_PLAYER = 1;
+    const TASK_CODE_FIND_PLAYER = 2;
 
     public static function findPlayer()
     {

@@ -33,8 +33,11 @@ class DataCenter
 
     public static function pushPlayerToWaitList($player_id)
     {
-        $key = self::PREFIX_KEY . ":player_wait_list";
-        self::redis()->lPush($key, $player_id);
+        $key         = self::PREFIX_KEY . ":player_wait_list";
+        $palayer_ids = self::redis()->lrange($key, 0, -1);
+        if (!in_array($player_id, $palayer_ids)) {
+            self::redis()->lPush($key, $player_id);
+        }
     }
 
     public static function popPlayerFromWaitList()
@@ -83,6 +86,7 @@ class DataCenter
     {
         self::setPlayerId($player_fd, $player_id);
         self::setPlayerFd($player_id, $player_fd);
+        self::setOnlinePlayer($player_id);
     }
 
     public static function delPlayerInfo($player_fd)
@@ -90,6 +94,7 @@ class DataCenter
         $player_id = self::getPlayerId($player_fd);
         self::delPlayerFd($player_id);
         self::delPlayerId($player_fd);
+        self::delOnlinePlayer($player_id);
     }
 
     public static function initDataCenter()
@@ -118,6 +123,10 @@ class DataCenter
         foreach ($values as $value) {
             self::redis()->del($value);
         }
+
+        //清空在线玩家
+        $key = self::PREFIX_KEY . ':online_player';
+        self::redis()->del($key);
     }
 
     public static function setPlayerRoomId($player_id, $room_id)
@@ -136,5 +145,29 @@ class DataCenter
     {
         $key = self::PREFIX_KEY . ':player_room_id:' . $player_id;
         self::redis()->del($key);
+    }
+
+    public static function setOnlinePlayer($player_id)
+    {
+        $key = self::PREFIX_KEY . ':online_player';
+        self::redis()->hSet($key, $player_id, 1);
+    }
+
+    public static function getOnlinePlayer($player_id)
+    {
+        $key = self::PREFIX_KEY . ':online_player';
+        return self::redis()->hGet($key, $player_id);
+    }
+
+    public static function delOnlinePlayer($player_id)
+    {
+        $key = self::PREFIX_KEY . ':online_player';
+        self::redis()->hDel($key, $player_id);
+    }
+
+    public static function lenOnlinePlayer()
+    {
+        $key = self::PREFIX_KEY . ':online_player';
+        return self::redis()->hLen($key);
     }
 }

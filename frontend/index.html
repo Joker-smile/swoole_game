@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Joker</title>
     <script src="https://cdn.bootcss.com/vue/2.6.10/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
     <link rel="icon" href="data:;base64,=">
     <style>
         .gameItem {
@@ -75,6 +76,10 @@
         匹配中……
     </div>
     <br>
+    <div v-if="onlinePlayer">
+        当前在线玩家：{{onlinePlayer}}
+    </div>
+    <br>
     <hr>
     <div v-if="mapData" style="display: flex">
         <div>
@@ -120,19 +125,49 @@
         data: {
             message: 'Hello Joker!',
             websock: null,
-            playerId: 'player_' + Math.round(Math.random() * 1000),
             roomId: '',
             matching: false,
             mapData: null,
+            playerId: '',
+            onlinePlayer: null
         },
         created() {
+            this.initPlayerId();
             this.initWebSocket();
             this.initDirectionKey();
+            this.getServerInfo()
         },
         destroyed() {
             this.websock.close() //离开路由之后断开websocket连接
         },
         methods: {
+            initPlayerId() {
+                var inputPlayerId = this.getUrlParam('player_id')
+                if (inputPlayerId !== '') {
+                    this.playerId = inputPlayerId
+                } else {
+                    this.playerId = 'player_' + Math.round(Math.random() * 1000)
+                }
+            },
+            getUrlParam(paramName) {
+                var url = document.location.toString();
+                var arrObj = url.split("?");
+                if (arrObj.length > 1) {
+                    var arrPara = arrObj[1].split("&");
+                    var arr;
+                    for (var i = 0; i < arrPara.length; i++) {
+                        arr = arrPara[i].split("=");
+                        if (arr !== null && arr[0] === paramName) {
+                            return arr[1];
+                        }
+                    }
+                    return '';
+                }
+                else {
+                    return "";
+                }
+            },
+
             initDirectionKey() {
                 var that = this
                 document.onkeydown = function () {
@@ -153,13 +188,36 @@
             },
 
             initWebSocket() { //初始化websocket
-                //改成跟configs一致的host跟port
-                const wsuri = "ws://0.0.0.0:5230?player_id=" + this.playerId;
+                //从虚拟机映射出来的ip,与及服务端端口
+                const wsuri = "ws://192.168.33.10:5230?player_id="+this.playerId;
                 this.websock = new WebSocket(wsuri);
                 this.websock.onmessage = this.websocketonmessage;
                 this.websock.onopen = this.websocketonopen;
                 this.websock.onerror = this.websocketonerror;
                 this.websock.onclose = this.websocketclose;
+            },
+
+            getServerInfo() {
+                var that = this;
+                $.ajax({
+                    //从虚拟机映射出来的ip,与及前端端口
+                    url: 'http://192.168.33.10:5231',
+                    type: 'get',
+                    dataType: 'json',
+                    data: {
+                        'type': 'get_online_player'
+                    },
+                    success: function (result) {
+                        setInterval(function () {
+                            $.get('http://192.168.33.10:5231/?type=get_online_player', function (ret) {
+                                that.onlinePlayer = JSON.parse(ret).online_player
+                            });
+                        }, 1500)
+                    },
+                    error: function () {
+                        that.onlinePlayer = 0;
+                    },
+                })
             },
 
             clickDirect(direction) {
@@ -215,7 +273,7 @@
             },
 
             websocketonopen() { //连接建立之后执行send方法发送数据
-                let actions = "client:hello serve!";
+                let actions = {"code": 200, 'message': "client:hello serve!"};
                 this.websocketsend(actions);
             },
 
@@ -250,6 +308,9 @@
 
             websocketclose(e) {  //关闭
                 console.log('断开连接', e);
+                if (e.code === 4000) {
+                    alert('该player_id已在线')
+                }
             },
         }
     })

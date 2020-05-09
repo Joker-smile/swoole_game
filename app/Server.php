@@ -30,6 +30,7 @@ class Server
         $this->ws->on('close', [$this, 'onClose']);
         $this->ws->on('task', [$this, 'onTask']);
         $this->ws->on('finish', [$this, 'onFinish']);
+        $this->ws->on('request', [$this, 'onRequest']);
         $this->ws->listen(get_config_by_key('host'), get_config_by_key('front_port'), SWOOLE_SOCK_TCP);
         $this->ws->start();
     }
@@ -54,7 +55,11 @@ class Server
     {
         DataCenter::log(sprintf('client open fd：%d', $request->fd));
         $player_id = $request->get['player_id'];
-        DataCenter::setPlayerInfo($player_id, $request->fd);
+        if (empty(DataCenter::getOnlinePlayer($player_id))) {
+            DataCenter::setPlayerInfo($player_id, $request->fd);
+        } else {
+            $server->disconnect($request->fd, 4000, "该player_id:{$player_id}已在线");
+        }
     }
     public function onMessage($server, $request)
     {
@@ -110,6 +115,18 @@ class Server
                 $this->logic->createRoom($data['data']['red_player'],
                     $data['data']['blue_player']);
                 break;
+        }
+    }
+
+    public function onRequest($request, $response)
+    {
+        DataCenter::log("onRequest");
+        $action = $request->get['type'];
+        if ($action == 'get_online_player') {
+            $data = [
+                'online_player' => DataCenter::lenOnlinePlayer()
+            ];
+            $response->end(json_encode($data));
         }
     }
 }

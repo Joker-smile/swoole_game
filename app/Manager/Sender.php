@@ -21,18 +21,18 @@ class Sender
 
     ];
 
-    public static function sendMessage($playerId, $code, $data = [])
+    public static function sendMessage($player_id, $code, $data = [])
     {
         $message  = [
             'code' => $code,
             'msg'  => self::CODE_MSG[$code] ?? '',
             'data' => $data
         ];
-        $playerFd = DataCenter::getPlayerFd($playerId);
-        if (empty($playerFd)) {
+        $player_fd = DataCenter::getPlayerFd($player_id);
+        if (empty($player_fd)) {
             return;
         }
-        DataCenter::$server->push($playerFd, json_encode($message));
+        DataCenter::$server->push($player_fd, json_encode($message));
     }
 
 }
