@@ -7,7 +7,8 @@
         }
     ],
     "require": {
-        "ext-redis": "*"
+        "ext-redis": "*",
+        "ext-json": "*"
     },
     "autoload": {
         "psr-4": {
