@@ -121,6 +121,15 @@ class Server
     public function onRequest($request, $response)
     {
         DataCenter::log("onRequest");
+//如果存在跨域问题打开
+//        $response->header('Access-Control-Allow-Origin', '*');
+//        $response->header('Access-Control-Allow-Methods', 'GET, POST, DELETE, PUT, PATCH, OPTIONS');
+//        $response->header('Access-Control-Allow-Headers', 'Authorization, User-Agent, Keep-Alive, Content-Type, X-Requested-With');
+//        if ($request->server['request_method'] == 'OPTIONS') {
+//            $response->status(http_response_code());
+//            $response->end();
+//            return;
+//        }
         $action = $request->get['type'];
         if ($action == 'get_online_player') {
             $data = [
